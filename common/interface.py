@@ -9,6 +9,10 @@ import flwr as fl
 import torch
 from torch import nn
 
+# TODO: Design improved interface for generalised synchronous FRL
+# - How tightly should this be linked with existing libraries and requirements?
+# - Enforce the curiosity library as a requirements?
+# - Packaging and integration as a PR into flwr
 
 # ==========
 # Functions from https://flower.ai/docs/framework/tutorial-series-get-started-with-flower-pytorch.html
@@ -25,7 +29,7 @@ class GymnasiumActorClient(fl.client.NumPyClient, ABC):
     """  A client for federated reinforcement learning
     """
 
-    def __init__(self, env: gym.Env, net: nn.Module):
+    def __init__(self, env: gym.Env, net: nn.Module, config: Dict):
         """ Initialises the client
 
         Args:
@@ -34,6 +38,7 @@ class GymnasiumActorClient(fl.client.NumPyClient, ABC):
         """
         self.env = env
         self.net = net
+        self.cfg = config
 
     def fit(self, parameters, config: Dict):
         set_parameters(self.net, parameters)

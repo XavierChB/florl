@@ -13,10 +13,12 @@ from common.interface import GymnasiumActorClient
 # Nair et al.
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+NUM_CLIENTS = 10
 
 class DQNClient(GymnasiumActorClient):
-    def train(net: Module, config: Dict):
-        return super().train(config)
+    def train(self, net: Module, config: Dict):
+        # TODO
+        return {}, 1
 
 def create_dqn_client(cid: int, config) -> DQNClient:
     # Build env
@@ -32,16 +34,21 @@ def create_dqn_client(cid: int, config) -> DQNClient:
     return DQNClient(env, net)
 
 # TODO: Separate config out, maybe with Hydra
-config = {
+config = DictConfig({
     "env": {
         "name": "CartPole-v1"
     },
     "critic": {
         "features": 64
     }
-}
+})
 
-strategy = fl.server.strategy.FedAvg(
-    fraction_fit=1.0, # All actors available
+# Gorila with Flower
+strategy = fl.server.strategy.FedAvg()
+fl.simulation.start_simulation(
+    client_fn=lambda cid: create_dqn_client(int(cid), config=config).to_client(),
+    client_resources={'num_cpus': 1},
+    config=fl.server.ServerConfig(num_rounds=1),
+    num_clients = NUM_CLIENTS,
+    strategy = strategy
 )
-create_dqn_client(0, config)

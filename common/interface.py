@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Dict, List, OrderedDict, Tuple
 
-from typing import Dict, List, OrderedDict
 from flwr.common import NDArrays
 import numpy as np
 
@@ -37,17 +37,22 @@ class GymnasiumActorClient(fl.client.NumPyClient, ABC):
 
     def fit(self, parameters, config: Dict):
         set_parameters(self.net, parameters)
-        return self.train(self.net, config)
+        metrics, n_examples = self.train(self.net, config)
+        return self.get_parameters(config=config), n_examples, metrics
 
     def get_parameters(self, config: Dict) -> NDArrays:
         return get_parameters(self.net)
 
     @abstractmethod
-    def train(net: nn.Module, config: Dict):
+    def train(self, net: nn.Module, config: Dict) -> Tuple[Dict, int]:
         """ Runs a reinforcement learning algorithm to update net
 
         Args:
             net (nn.Module): net.
             config (Dict): configuration file.
+
+        Returns:
+            Dict: Fit metrics
+            int:  Recommended weighting factor (corresponds to number of examples), e.g replay buffer size or collected frames.
         """
         raise NotImplementedError

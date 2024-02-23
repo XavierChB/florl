@@ -11,7 +11,7 @@ from torch import nn
 
 # TODO: Design improved interface for generalised synchronous FRL
 # - How tightly should this be linked with existing libraries and requirements?
-# - Enforce the curiosity library as a requirements?
+# - Enforce the curiosity library as a requirements? May be good for evaluation.
 # - Packaging and integration as a PR into flwr
 
 # ==========
@@ -44,6 +44,10 @@ class GymnasiumActorClient(fl.client.NumPyClient, ABC):
         set_parameters(self.net, parameters)
         metrics, n_examples = self.train(self.net, config)
         return self.get_parameters(config=config), n_examples, metrics
+    
+    def evaluate(self, parameters, config: Dict):
+        set_parameters(self.net, parameters)
+        return 0.0, 1, {}
 
     def get_parameters(self, config: Dict) -> NDArrays:
         return get_parameters(self.net)

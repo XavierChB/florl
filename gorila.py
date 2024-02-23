@@ -36,6 +36,14 @@ class DQNClient(GymnasiumActorClient):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         net = net.to(self.device)
 
+            # Logging
+        self.evaluator = curiosity.logging.CuriosityEvaluator(
+            env,
+            video=False,
+            device=self.device,
+            **self.cfg["evaluation"]
+        )
+
             # Initialise Reinforcement Learning Modules
         self.memory = curiosity.experience.util.build_replay_buffer(
             env=env,
@@ -77,6 +85,10 @@ class DQNClient(GymnasiumActorClient):
             self.algorithm.update(batch, aux, self.step)
 
         return {}, train_config["frames"]
+
+    def evaluate(self, parameters, config: Dict):
+        super().evaluate(parameters, config)
+
 
     @property
     def step(self) -> int:

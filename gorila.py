@@ -80,7 +80,7 @@ class DQNClient(GymnasiumActorClient):
         metrics = {}
         # Synchronise critic net
         self.algorithm.critic.net = net
-
+        critic_loss = []
         # Training
         for _ in range(train_config["frames"]):
             self._step += 1
@@ -89,10 +89,10 @@ class DQNClient(GymnasiumActorClient):
             batch, aux = self.memory.sample(self.cfg["train"]["minibatch_size"])
             batch = Transition(*batch)
             # Algorithm Update
-            critic_loss = self.algorithm.update(batch, aux, self.step)
+            critic_loss.append(self.algorithm.update(batch, aux, self.step))
 
         # Logging
-        metrics["loss"] = critic_loss
+        metrics["loss"] = sum(critic_loss) / len(critic_loss)
         return metrics, train_config["frames"]
 
     def evaluate(self, parameters, config: Dict):
@@ -114,6 +114,7 @@ def create_dqn_client(cid: int, config: Dict) -> DQNClient:
     env = curiosity.util.build_env(**config["rl"]["env"])
 
     # Build net
+    torch.manual_seed(0)
     net = curiosity.util.build_critic(
         env=env,
         features=config["rl"]["algorithm"]["critic"]["features"]

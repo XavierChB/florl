@@ -30,7 +30,6 @@ def set_parameters(net, parameters: List[np.ndarray]):
 def get_parameters(net) -> List[np.ndarray]:
     return [val.cpu().numpy() for _, val in net.state_dict().items()]
 
-
 def aggregate_weighted_average(metrics: List[Tuple[int, dict]]) -> dict:
     """Generic function to combine results from multiple clients
     following training or evaluation.

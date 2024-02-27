@@ -8,13 +8,16 @@ import torch
 # ==========
 # Functions from https://flower.ai/docs/framework/tutorial-series-get-started-with-flower-pytorch.html and the labs
 
+
 def set_torch_parameters(net: torch.nn.Module, parameters: List[np.ndarray]):
     params_dict = zip(net.state_dict().keys(), parameters)
     state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
     net.load_state_dict(state_dict, strict=True)
 
+
 def get_torch_parameters(net: torch.nn.Module) -> List[np.ndarray]:
     return [val.cpu().numpy() for _, val in net.state_dict().items()]
+
 
 def aggregate_weighted_average(metrics: List[Tuple[int, dict]]) -> dict:
     """Generic function to combine results from multiple clients

@@ -12,14 +12,15 @@ from flwr.common.typing import (
     FitIns,
     FitRes,
     EvaluateIns,
-    EvaluateRes
+    EvaluateRes,
 )
 
 from florl.common.knowledge import Knowledge
 
+
 class RLClient(fl.client.Client, ABC):
-    """ A client interface specific to reinforcement learning
-    """
+    """A client interface specific to reinforcement learning"""
+
     def __init__(self, knowledge: Knowledge):
         self._knowl = knowledge
 
@@ -39,7 +40,7 @@ class RLClient(fl.client.Client, ABC):
     # =========
 
     def train(self, config: Config) -> FitRes:
-        """ Runs a reinforcement learning algorithm to update local knowledge
+        """Runs a reinforcement learning algorithm to update local knowledge
 
         Args:
             config: Training Configuration
@@ -53,9 +54,9 @@ class RLClient(fl.client.Client, ABC):
             num_examples=0,
             metrics={},
         )
-    
+
     def epoch(self, config: Config) -> EvaluateRes:
-        """ An epoch represents a evaluation run
+        """An epoch represents a evaluation run
 
         Args:
             config (Config): Evaluation configuration
@@ -70,15 +71,13 @@ class RLClient(fl.client.Client, ABC):
             metrics={},
         )
 
+
 class GymClient(RLClient, ABC):
-    """ An RL client training within a gym environment
-    """
-    def __init__(self,
-                 knowledge:Knowledge,
-                 env: gym.Env,
-                 seed: int | None = None):
+    """An RL client training within a gym environment"""
+
+    def __init__(self, knowledge: Knowledge, env: gym.Env, seed: int | None = None):
         super().__init__(knowledge)
         self._env = env
         self._seed = seed
 
-        self._env.reset(seed = self._seed)
+        self._env.reset(seed=self._seed)

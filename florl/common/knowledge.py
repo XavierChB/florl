@@ -9,15 +9,16 @@ from flwr.common.typing import (
     GetParametersIns,
     GetParametersRes,
     Parameters,
-    NDArrays
+    NDArrays,
 )
 
+
 class Knowledge(ABC):
-    """ Represents abstract information learnt by a RL algorithm
+    """Represents abstract information learnt by a RL algorithm
 
     Examples include networks for the world model, policy or value functions.
     """
-    
+
     # Serialisation hack
     # Ideally this should correspond to a gRPC class instead
     SEP_CHAR = "|"
@@ -36,24 +37,29 @@ class Knowledge(ABC):
             if parameter_res.status.code != Code.OK:
                 return parameter_res
 
+        message = ",".join([x for x in modules])
         return GetParametersRes(
             status=Status(
                 code=Code.OK,
-                message=f"Sending {",".join([x for x in modules])}",
+                message=f"Sending {message}",
             ),
             parameters=Parameters(
-                tensor_type=Knowledge.SEP_CHAR.join([x.parameters.tensor_type for x in all_parameters]),
-                tensors=[]
+                tensor_type=Knowledge.SEP_CHAR.join(
+                    [x.parameters.tensor_type for x in all_parameters]
+                ),
+                tensors=[],
             ),
         )
 
-    def get_module_parameters(self, id_: str, ins: GetParametersIns) -> GetParametersRes:
+    def get_module_parameters(
+        self, id_: str, ins: GetParametersIns
+    ) -> GetParametersRes:
         # id_ exists
         if not id_ in self._modules_registry:
             return GetParametersRes(
                 Status(
                     code=Code.GET_PARAMETERS_NOT_IMPLEMENTED,
-                    message=f"Module {id_} does not exist in registry."
+                    message=f"Module {id_} does not exist in registry.",
                 )
             )
 
@@ -65,8 +71,7 @@ class Knowledge(ABC):
         id_: int = self._modules_registry[id_]
         parameter_res.parameters.tensors = [
             struct.pack(">I", id_) + tensor
-            for
-            tensor in parameter_res.parameters.tensors
+            for tensor in parameter_res.parameters.tensors
         ]
         return parameter_res
 
@@ -83,33 +88,34 @@ class Knowledge(ABC):
                 tensor_buffer.append(tensor)
             else:
                 parameters = Parameters(
-                    tensors=tensor_buffer,
-                    tensor_types=tensor_types[i]
+                    tensors=tensor_buffer, tensor_types=tensor_types[i]
                 )
                 self._set_module_parameters(self._modules[id_], parameters)
-                i, tensor_buffer = i+1, []
+                i, tensor_buffer = i + 1, []
             previous_id = id_
 
     @abstractmethod
-    def _get_module_parameters(self, id_: str, ins: GetParametersIns) -> GetParametersRes:
+    def _get_module_parameters(
+        self, id_: str, ins: GetParametersIns
+    ) -> GetParametersRes:
         raise NotImplementedError
 
     @abstractmethod
     def _set_module_parameters(self, id_: str, ins: Parameters) -> None:
         raise NotImplementedError
 
+
 class NumPyKnowledge(Knowledge, ABC):
-    """ Knowledge, where individual module parameters can be transformed into numpy parameters
-    """
-    def _get_module_parameters(self, id_: str, ins: GetParametersIns) -> GetParametersRes:
+    """Knowledge, where individual module parameters can be transformed into numpy parameters"""
+
+    def _get_module_parameters(
+        self, id_: str, ins: GetParametersIns
+    ) -> GetParametersRes:
         numpy_parameters = self._get_module_parameters_numpy(id_, ins)
         return ndarrays_to_parameters(numpy_parameters)
 
     def _set_module_parameters(self, id_: str, ins: Parameters) -> None:
-        return self._set_module_parameters_numpy(
-            id_,
-            parameters_to_ndarrays(ins)
-        )
+        return self._set_module_parameters_numpy(id_, parameters_to_ndarrays(ins))
 
     @abstractmethod
     def _get_module_parameters_numpy(self, id_: str, ins: GetParametersIns) -> NDArrays:
@@ -118,4 +124,3 @@ class NumPyKnowledge(Knowledge, ABC):
     @abstractmethod
     def _set_module_parameters_numpy(self, id_: str, ins: Parameters) -> None:
         raise NotImplementedError
-

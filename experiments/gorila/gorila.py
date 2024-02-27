@@ -32,7 +32,7 @@ class DQNKnowledge(NumPyKnowledge):
         else:
             raise ValueError(f"Unknown id {id_}")
 
-class KittenDQN(KittenClient):
+class DQNClient(KittenClient):
     def __init__(self,
                  knowledge: DQNKnowledge,
                  env: gym.Env,
@@ -45,7 +45,7 @@ class KittenDQN(KittenClient):
     def build_algorithm(self) -> None:
         self._cfg.get("algorithm", {}).pop("critic", None)
         self._algorithm = DQN(
-            critic=self._critic_network,
+            critic=self._knowl.critic.net,
             device=self._device,
             **self._cfg.get("algorithm", {})
         )
@@ -59,6 +59,9 @@ class KittenDQN(KittenClient):
     @property
     def algorithm(self) -> kitten.rl.Algorithm:
         return self._algorithm
+    @property
+    def policy(self) -> kitten.policy.Policy:
+        return self._policy
 
     # Training
     def early_start(self):
@@ -73,8 +76,8 @@ class KittenDQN(KittenClient):
         for _ in range(train_config["frames"]):
             self._step += 1
             # Collected Transitions
-            self.collector.collect(n=1)
-            batch, aux = self.memory.sample(self.cfg["train"]["minibatch_size"])
+            self._collector.collect(n=1)
+            batch, aux = self._memory.sample(self._cfg["train"]["minibatch_size"])
             batch = kitten.experience.Transition(*batch)
             # Algorithm Update
             critic_loss.append(self.algorithm.update(batch, aux, self.step))
@@ -95,14 +98,14 @@ class DQNClientFactory:
         )
         self.device = device
         
-    def create_dqn_client(self, cid: int, config: Config) -> KittenDQN:
+    def create_dqn_client(self, cid: int, config: Config) -> DQNClient:
         env = copy.deepcopy(self.env)
         net = copy.deepcopy(self.net)
 
         knowledge = DQNKnowledge(net)
-        return KittenDQN(
+        return DQNClient(
             knowledge=knowledge,
-            env = env,
+            env=env,
             config=config,
             seed=cid,
             device=self.device

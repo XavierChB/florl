@@ -1,2 +1,6 @@
-curiosity @ https://github.com/MarkHaoxiang/curiosity.git
 flwr
+gymnasium
+
+
+# Kitten Baselines
+kitten[kitten] @ https://github.com/MarkHaoxiang/kitten.git

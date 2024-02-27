@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "florl"
+version = "0.0.1"
+authors = [
+  { name="Hao Xiang Li", email="mark.haoxiang@gmail.com" },
+  { name="Xavier Chen", email="zc344@cam.ac.uk"}
+]
+description = "Part II Project - 2023"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Apache-2.0",
+    "Operating System :: OS Independent",
+]
+
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = ["log*"]

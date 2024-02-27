@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 import copy
-from flwr.common.typing import Config, EvaluateRes
+from typing import Tuple, Dict
 
+from flwr.common.typing import Scalar, Config
 from gymnasium.core import Env
-from florl.client import GymClient
-from florl.common import Knowledge
 import kitten
 
+from florl.client import GymClient
 from florl.common import Knowledge
-
 
 class KittenClient(GymClient, ABC):
     """A client conducting training and evaluation with the Kitten RL library"""
@@ -46,11 +45,11 @@ class KittenClient(GymClient, ABC):
         )
         self.early_start()
 
-    def epoch(self, config: Config) -> EvaluateRes:
+    def epoch(self, config: Config) -> Tuple[int, Dict[str, Scalar]]:
         repeats = config.get("evaluation_repeats", self._evaluator.repeats)
         reward = self._evaluator.evaluate(self.policy, repeats)
         # TODO: What is loss under this framework? API shouldn't enforce returning this
-        return 0.0, repeats, {"reward": reward}
+        return repeats, {"reward": reward}
 
     @property
     def step(self) -> int:

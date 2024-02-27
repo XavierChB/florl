@@ -3,7 +3,7 @@ from flwr.common.typing import GetParametersIns, NDArrays, Parameters
 
 import gymnasium as gym
 import torch.nn as nn
-from flwr.common import Config
+from flwr.common import Status, FitRes, Config, Code
 import kitten
 from kitten.rl.dqn import DQN
 
@@ -67,10 +67,9 @@ class DQNClient(KittenClient):
     def early_start(self):
         self._collector.early_start(n=self._cfg["train"]["initial_collection_size"])
 
-    def train(self, net: nn.Module, train_config: Config):
+    def train(self, train_config: Config):
         metrics = {}
         # Synchronise critic net
-        self.algorithm.critic.net = net
         critic_loss = []
         # Training
         for _ in range(train_config["frames"]):
@@ -84,7 +83,7 @@ class DQNClient(KittenClient):
 
         # Logging
         metrics["loss"] = sum(critic_loss) / len(critic_loss)
-        return metrics, train_config["frames"]
+        return len(self._memory), metrics
 
 class DQNClientFactory:
     def __init__(self, config: Config, device: str = "cpu") -> None:

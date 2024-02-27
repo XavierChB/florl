@@ -34,7 +34,7 @@ class Knowledge(ABC):
 
         # Status Validation
         for parameter_res in all_parameters:
-            if parameter_res.status.code != Code.OK:
+            if parameter_res.status != Code.OK:
                 return parameter_res
 
         message = ",".join([x for x in modules])
@@ -112,7 +112,10 @@ class NumPyKnowledge(Knowledge, ABC):
         self, id_: str, ins: GetParametersIns
     ) -> GetParametersRes:
         numpy_parameters = self._get_module_parameters_numpy(id_, ins)
-        return ndarrays_to_parameters(numpy_parameters)
+        return GetParametersRes(
+            status=Code.OK,
+            parameters=ndarrays_to_parameters(numpy_parameters)
+        )
 
     def _set_module_parameters(self, id_: str, ins: Parameters) -> None:
         return self._set_module_parameters_numpy(id_, parameters_to_ndarrays(ins))

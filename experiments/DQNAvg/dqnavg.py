@@ -3,7 +3,7 @@ from flwr.common.typing import GetParametersIns, NDArrays, Parameters
 
 import gymnasium as gym
 import torch.nn as nn
-from flwr.common import Status, FitRes, Config, Code
+from flwr.common import Config
 import kitten
 from kitten.rl.dqn import DQN
 
@@ -102,10 +102,11 @@ class DQNClientFactory:
         net = copy.deepcopy(self.net)
 
         knowledge = DQNKnowledge(net)
-        return DQNClient(
+        client = DQNClient(
             knowledge=knowledge,
             env=env,
             config=config,
             seed=cid,
             device=self.device
         )
+        return client

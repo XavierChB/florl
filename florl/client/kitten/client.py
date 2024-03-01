@@ -30,6 +30,7 @@ class KittenClient(GymClient, ABC):
         self._evaluator = kitten.logging.KittenEvaluator(
             env=self._env, device=self._device, **self._cfg.get("evaluation", {})
         )
+        self._np_rand = kitten.util.global_seed(seed, self._env, self._evaluator)
 
         # RL Modules
         self._step = 0

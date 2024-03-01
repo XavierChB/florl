@@ -1,1 +1,1 @@
-from .client import RLClient, GymClient
+from .client import FlorlClient, GymClient

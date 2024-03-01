@@ -20,7 +20,7 @@ from flwr.common.typing import (
 from florl.common.knowledge import Knowledge
 
 
-class RLClient(fl.client.Client, ABC):
+class FlorlClient(fl.client.Client, ABC):
     """A client interface specific to reinforcement learning"""
 
     def __init__(self, knowledge: Knowledge):
@@ -88,10 +88,8 @@ class RLClient(fl.client.Client, ABC):
             config (Config): Evaluation configuration
         """
         raise NotImplementedError
-        
 
-
-class GymClient(RLClient, ABC):
+class GymClient(FlorlClient, ABC):
     """An RL client training within a gym environment"""
 
     def __init__(self, knowledge: Knowledge, env: gym.Env, seed: int | None = None):

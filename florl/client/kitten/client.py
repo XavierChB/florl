@@ -4,6 +4,7 @@ from typing import Tuple, Dict
 
 from flwr.common.typing import Scalar, Config
 from gymnasium.core import Env
+import torch
 import kitten
 
 from florl.client import GymClient
@@ -47,6 +48,7 @@ class KittenClient(GymClient, ABC):
         self.early_start()
 
     def epoch(self, config: Config) -> Tuple[int, Dict[str, Scalar]]:
+        torch.manual_seed(self._np_rand.integers(0, 65536))
         repeats = config.get("evaluation_repeats", self._evaluator.repeats)
         reward = self._evaluator.evaluate(self.policy, repeats)
         # TODO: What is loss under this framework? API shouldn't enforce returning this

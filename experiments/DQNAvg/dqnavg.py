@@ -1,8 +1,8 @@
 import copy
-from flwr.common.typing import GetParametersIns, NDArrays, Parameters
+from flwr.common.typing import GetParametersIns, Parameters
 
 import gymnasium as gym
-import torch.nn as nn
+import torch
 from flwr.common import Config
 import kitten
 from kitten.rl.dqn import DQN
@@ -12,7 +12,7 @@ from florl.common.util import get_torch_parameters, set_torch_parameters
 from florl.client.kitten import KittenClient
 
 class DQNKnowledge(NumPyKnowledge):
-    def __init__(self, critic: nn.Module) -> None:
+    def __init__(self, critic: torch.nn.Module) -> None:
         super().__init__(["critic", "critic_target"])
         self.critic = kitten.nn.AddTargetNetwork(copy.deepcopy(critic))
     
@@ -52,6 +52,7 @@ class DQNClient(KittenClient):
         self._policy = kitten.policy.EpsilonGreedyPolicy(
             fn=self.algorithm.policy_fn,
             action_space=self._env.action_space,
+            rng=self._np_rand,
             device=self._device
         )
         # Synchronisation
@@ -68,6 +69,8 @@ class DQNClient(KittenClient):
         self._collector.early_start(n=self._cfg["train"]["initial_collection_size"])
 
     def train(self, train_config: Config):
+        # Hack
+        torch.manual_seed(self._np_rand.integers(0, 65536))
         metrics = {}
         # Synchronise critic net
         critic_loss = []
